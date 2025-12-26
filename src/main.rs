@@ -4,6 +4,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::io::{self, Write};
 use std::fs::OpenOptions;
+use rand::Rng;
+
 
 
 #[derive(Parser, Debug)]
@@ -35,6 +37,24 @@ fn append_to_log(log_path: &Path, created: &Path) -> io::Result<()> {
     Ok(())
 }
 
+/// Generates a random filename with .txt extension
+/// Format: random_{8_chars}.txt
+fn generate_random_filename() -> String {
+
+    let length: usize = 32;
+    const CHARSET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let mut rng = rand::thread_rng();
+
+    let chars: String = (0..length)
+        .map(|_| {
+            let idx = rng.gen_range(0..CHARSET.len());
+            CHARSET[idx] as char
+        })
+        .collect();
+
+    return format!("{}.txt", chars);
+}
+
 
 fn log_path() -> PathBuf {
     let proj = ProjectDirs::from("com", "Ammar_Ali", "file_scat")
@@ -54,6 +74,8 @@ fn main() {
     
     if args.testing {
         println!("Testing mode: Args: {:?}", args);
+        println!("Generated a random filename: {}", generate_random_filename());
+        return;
     }
     
     let log = log_path();
