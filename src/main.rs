@@ -1,9 +1,8 @@
 use clap::Parser;
 use directories::ProjectDirs;
-use std::fs;
 use std::path::{Path, PathBuf};
-use std::io::{self, Write};
-use std::fs::OpenOptions;
+use std::io::{Write, Result};
+use std::fs::{self, OpenOptions, File};
 use rand::Rng;
 
 
@@ -23,7 +22,7 @@ struct Args {
     testing: bool,
 }
 
-fn append_to_log(log_path: &Path, created: &Path) -> io::Result<()> {
+fn append_to_log(log_path: &Path, created: &Path) -> Result<()> {
     let mut file = OpenOptions::new()
     .create(true)
     .append(true)
@@ -38,7 +37,6 @@ fn append_to_log(log_path: &Path, created: &Path) -> io::Result<()> {
 }
 
 /// Generates a random filename with .txt extension
-/// Format: random_{8_chars}.txt
 fn generate_random_filename() -> String {
 
     let length: usize = 32;
@@ -55,6 +53,20 @@ fn generate_random_filename() -> String {
     return format!("{}.txt", chars);
 }
 
+/// Creates an empty file at the given path, then logs it
+/// Returns Result - can fail if file creation or logging fails
+fn create_file_at_path(file_path: &Path, log_path: &Path) -> Result<()> {
+    // TODO:
+    // 1. Create empty file at file_path using File::create()
+    // 2. Use append_to_log() to log the file_path
+    // 3. Return Ok(()) on success
+    // Hint: Both operations return Result, use ? operator
+    File::create(file_path)?;
+
+    append_to_log(log_path, file_path)?;
+
+    return Ok(());
+}
 
 fn log_path() -> PathBuf {
     let proj = ProjectDirs::from("com", "Ammar_Ali", "file_scat")
@@ -74,7 +86,17 @@ fn main() {
     
     if args.testing {
         println!("Testing mode: Args: {:?}", args);
-        println!("Generated a random filename: {}", generate_random_filename());
+        
+        let rand_file_name: String = generate_random_filename();
+        println!("Generated a random filename: {}", rand_file_name);
+
+        let rand_file_path: PathBuf = PathBuf::from("C:/projects/file_scat").join(&rand_file_name);
+        println!("Storing file at path: {}", rand_file_path.display());
+
+        let log: PathBuf = log_path();
+        create_file_at_path(&rand_file_path, &log)
+            .expect("Failed to create a test file");
+
         return;
     }
     
