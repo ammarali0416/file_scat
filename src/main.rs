@@ -1,10 +1,12 @@
+mod art;
+
 use clap::Parser;
 use directories::ProjectDirs;
 use std::path::{Path, PathBuf};
 use std::io::{Write, Result};
 use std::fs::{self, OpenOptions, File, read_to_string, remove_file};
 use rand::Rng;
-
+use art::ASCII_ART;
 
 
 #[derive(Parser, Debug)]
@@ -22,6 +24,14 @@ struct Args {
     testing: bool,
 }
 
+/// Creates file at path and writes ASCII art content
+fn create_file_with_content(file_path: &Path) -> Result<()> {
+    let mut file: File = File::create(file_path)?;
+    
+    file.write_all(ASCII_ART.as_bytes())?;
+    file.flush()?;
+    Ok(())
+}
 fn append_to_log(log_path: &Path, file_paths: Vec<PathBuf>) -> Result<()> {
     let mut file = OpenOptions::new()
     .create(true)
@@ -110,8 +120,8 @@ fn main() {
             let rand_file_path: PathBuf = PathBuf::from("C:/projects/file_scat").join(&rand_file_name);
             //println!("Storing file at path: {}", rand_file_path.display());
             
-            File::create(&rand_file_path)
-                .expect("Failed to create file");
+            create_file_with_content(&rand_file_path)
+                .expect("Failed to create a random file");
         
             file_paths_array.push(rand_file_path);
             
