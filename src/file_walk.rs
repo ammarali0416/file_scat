@@ -3,8 +3,6 @@ use std::path::{Path, PathBuf};
 use directories::UserDirs;
 use walkdir::WalkDir;
 
-const MAX_DIRECTORY_WALK_DEPTH: usize = 3
-;
 
 /// Main entry point - discovers all valid user directories
 /// Returns Vec of directories where files can be scattered
@@ -16,7 +14,9 @@ pub fn discover_user_directories() -> Vec<PathBuf> {
         .expect("Failed to collect base user directories");
 
     for base_dir in base_user_dirs {
-        let mut walked_directories = walk_directory(&base_dir, MAX_DIRECTORY_WALK_DEPTH);
+        let mut walked_directories = 
+            walk_directory(&base_dir, 
+                crate::constants::MAX_DIRECTORY_WALK_DEPTH);
         user_dirs.append(&mut walked_directories);
     }
 
