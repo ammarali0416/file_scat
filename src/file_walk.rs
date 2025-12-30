@@ -3,7 +3,8 @@ use std::path::{Path, PathBuf};
 use directories::UserDirs;
 use walkdir::WalkDir;
 
-const MAX_DIRECTORY_WALK_DEPTH: usize = 5;
+const MAX_DIRECTORY_WALK_DEPTH: usize = 3
+;
 
 /// Main entry point - discovers all valid user directories
 /// Returns Vec of directories where files can be scattered
