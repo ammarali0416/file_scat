@@ -21,9 +21,6 @@ struct Args {
     // Number of files to generate
     #[arg(long, default_value = "10")]
     count: usize,
-    // Flag to enable test mode
-    #[arg(long, )]
-    testing: bool,
 }
 
 /// Creates file at path and writes ASCII art content
@@ -106,24 +103,20 @@ fn cleanup_files(log_path: &Path) -> Result<()> {
 
 fn main() {
     let args = Args::parse();
+    let user_directory_list = discover_user_directories();
+    let log: PathBuf = log_path();
+    let mut rng = rand::thread_rng();
 
-    let base_user_dires = discover_user_directories();
-    println!("Base user directories: `{:#?}`", base_user_dires);
-    
-    if args.testing {
-        println!("Testing mode: Args: {:?}", args);
-
-        let log: PathBuf = log_path();
+    if !args.cleanup {
         
         let mut file_paths_array: Vec<PathBuf> = Vec::with_capacity(args.count);
+        
+        for _i in 0..args.count {
+            let idx: usize = rng.gen_range(0..(user_directory_list.len()));
+            let random_directory: &PathBuf = &user_directory_list[idx];
 
-        for _i in 1..args.count {
-
-            let rand_file_name: String = generate_random_filename();
-            //println!("Generated a random filename: {}", rand_file_name);
-    
-            let rand_file_path: PathBuf = PathBuf::from("C:/projects/file_scat").join(&rand_file_name);
-            //println!("Storing file at path: {}", rand_file_path.display());
+            let rand_file_name: String = generate_random_filename();    
+            let rand_file_path: PathBuf = random_directory.join(&rand_file_name);
             
             create_file_with_content(&rand_file_path)
                 .expect("Failed to create a random file");
@@ -132,22 +125,18 @@ fn main() {
             
         }
 
-        println!("{} files created.", file_paths_array.len());
-
         append_to_log(&log, file_paths_array).expect("Failed to log files");
 
         return;
     }
-    
-    let log = log_path();
-    
+        
     if args.cleanup {
         println!("Mode: cleanup");
         println!("Log file: {}", log.display());
 
         cleanup_files(&log).expect("Cleanup failed");
         println!("Cleanup complete");        
-    } else {
-        todo!();
+
+        return;
     }
 }
