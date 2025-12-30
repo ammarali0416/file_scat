@@ -1,4 +1,5 @@
 mod art;
+mod file_walk;
 
 use clap::Parser;
 use directories::ProjectDirs;
@@ -6,8 +7,9 @@ use std::path::{Path, PathBuf};
 use std::io::{Write, Result};
 use std::fs::{self, OpenOptions, File, read_to_string, remove_file};
 use rand::Rng;
-use art::ASCII_ART;
 
+use art::ASCII_ART;
+use file_walk::discover_user_directories;
 
 #[derive(Parser, Debug)]
 #[command(name = "file_scat")]
@@ -104,6 +106,9 @@ fn cleanup_files(log_path: &Path) -> Result<()> {
 
 fn main() {
     let args = Args::parse();
+
+    let base_user_dires = discover_user_directories();
+    println!("Base user directories: `{:#?}`", base_user_dires);
     
     if args.testing {
         println!("Testing mode: Args: {:?}", args);
