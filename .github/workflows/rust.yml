@@ -6,7 +6,7 @@ on:
       - "v*.*.*" # e.g. v1.0.0
 
 permissions:
-  contents: write # required to upload release assets
+  contents: write
 
 jobs:
   build:
@@ -41,9 +41,8 @@ jobs:
       - name: Build (release)
         run: cargo build --release --locked --target ${{ matrix.target }}
 
-      # Package for Linux/macOS
-      - name: Package (tar.gz)
-        if: runner.os != 'Windows'
+      # Copy just the compiled binary to dist/
+      - name: Stage binary
         shell: bash
         run: |
           set -euxo pipefail
@@ -51,51 +50,12 @@ jobs:
           OUT_DIR="dist"
           mkdir -p "$OUT_DIR"
 
-          BIN_PATH="target/${{ matrix.target }}/release/${BIN_NAME}${{ matrix.bin_ext }}"
-          # If your binary name differs on non-Windows (common if Cargo.toml uses lowercase),
-          # rename BIN_NAME above to match your actual output file name.
+          SRC="target/${{ matrix.target }}/release/${BIN_NAME}${{ matrix.bin_ext }}"
+          DEST="${OUT_DIR}/${BIN_NAME}-${{ matrix.target }}${{ matrix.bin_ext }}"
+          cp "$SRC" "$DEST"
 
-          ASSET_BASENAME="${BIN_NAME}-${{ matrix.target }}"
-          cp "$BIN_PATH" "$OUT_DIR/$ASSET_BASENAME"
-
-          tar -czf "$OUT_DIR/$ASSET_BASENAME.tar.gz" -C "$OUT_DIR" "$ASSET_BASENAME"
-          rm "$OUT_DIR/$ASSET_BASENAME"
-
-          # checksum
-          if command -v shasum >/dev/null 2>&1; then
-            shasum -a 256 "$OUT_DIR/$ASSET_BASENAME.tar.gz" > "$OUT_DIR/$ASSET_BASENAME.tar.gz.sha256"
-          else
-            sha256sum "$OUT_DIR/$ASSET_BASENAME.tar.gz" > "$OUT_DIR/$ASSET_BASENAME.tar.gz.sha256"
-          fi
-
-      # Package for Windows
-      - name: Package (zip)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $BIN_NAME = "File_Scatter_Prank"
-          $OUT_DIR = "dist"
-          New-Item -ItemType Directory -Force -Path $OUT_DIR | Out-Null
-
-          $binPath = "target\${{ matrix.target }}\release\${BIN_NAME}${{ matrix.bin_ext }}"
-          $assetBase = "${BIN_NAME}-${{ matrix.target }}"
-          $stagedExe = Join-Path $OUT_DIR ("$assetBase${{ matrix.bin_ext }}")
-          Copy-Item $binPath $stagedExe -Force
-
-          $zipPath = Join-Path $OUT_DIR ("$assetBase.zip")
-          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-          Compress-Archive -Path $stagedExe -DestinationPath $zipPath
-
-          Remove-Item $stagedExe -Force
-
-          # checksum
-          $hash = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLower()
-          "$hash  $([System.IO.Path]::GetFileName($zipPath))" | Out-File -Encoding ascii (Join-Path $OUT_DIR "$assetBase.zip.sha256")
-
-      - name: Upload assets to GitHub Release
+      - name: Upload binary to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
           files: |
             dist/*
