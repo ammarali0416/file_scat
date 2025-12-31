@@ -9,8 +9,20 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build ${{ matrix.target }}
+  create_release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release for tag
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: false
+          draft: false
+
+  build_and_upload:
+    name: Build & Upload ${{ matrix.target }}
+    needs: create_release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -41,7 +53,6 @@ jobs:
       - name: Build (release)
         run: cargo build --release --locked --target ${{ matrix.target }}
 
-      # Copy just the compiled binary to dist/
       - name: Stage binary
         shell: bash
         run: |
@@ -57,5 +68,7 @@ jobs:
       - name: Upload binary to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/*
+          tag_name: ${{ github.ref_name }}
+          files: dist/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true
