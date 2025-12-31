@@ -46,7 +46,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          BIN_NAME="File_Scatter_Prank"
+          BIN_NAME="file_scat"
           OUT_DIR="dist"
           mkdir -p "$OUT_DIR"
 
