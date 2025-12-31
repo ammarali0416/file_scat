@@ -11,9 +11,15 @@ use std::process::Command;
 
 #[derive(Parser, Debug)]
 #[command(name = "file_scat")]
-#[command(about = "The most difficult quiz you'll ever take...")]
-struct Args {
-    /// Delete generated files listed in the log
+#[command(
+    about = "The most difficult quiz you'll ever take ...\n\n\
+             jk! Looks like you figured out this is more than a silly quiz.\n\
+             Check out your user directories, you might find some unknown, benign files.. :)\n\n\
+             Get rid of them using the --cleanup flag!\n\n\
+             Usage:\n  \
+             file_scat --cleanup    Delete all scattered files"
+)]struct Args {
+    /// Deletes all prank files generated each time you ran this program
     #[arg(long)]
     cleanup: bool,
     // UI testing
