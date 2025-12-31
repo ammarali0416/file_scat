@@ -17,7 +17,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          generate_release_notes: false
+          generate_release_notes: true
           draft: false
 
   build_and_upload:
@@ -71,4 +71,3 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: dist/*
           fail_on_unmatched_files: true
-          generate_release_notes: true
